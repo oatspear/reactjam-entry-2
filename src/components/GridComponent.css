@@ -1,0 +1,20 @@
+.grid-container {
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  gap: 10px;
+}
+
+.sub-grid {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.grid-item {
+  background-color: red;
+}
+
+.empty-container {
+  background-color: gray;
+}
