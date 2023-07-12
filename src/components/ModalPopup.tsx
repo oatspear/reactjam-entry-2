@@ -6,7 +6,9 @@ interface ModalPopupProps {
   onClose: () => void;
 }
 
-const ModalPopup: React.FC<ModalPopupProps> = ({ message, onClose }) => {
+// const PrintName2 = ({ prop1, prop2 }: Props): JSX.Element => { /** */}
+
+const ModalPopup = ({ message, onClose }: ModalPopupProps): JSX.Element => {
   const handleBackgroundClick = (event: React.MouseEvent<HTMLDivElement>) => {
     // Trigger close action only if the translucent background is clicked
     if (event.target === event.currentTarget) {

@@ -15,6 +15,18 @@
   background-color: red;
 }
 
+.grid-item:nth-child(2) {
+  background-color: green;
+}
+
+.grid-item:nth-child(3) {
+  background-color: blue;
+}
+
+.grid-item:nth-child(4) {
+  background-color: yellow;
+}
+
 .empty-container {
   background-color: gray;
 }

@@ -6,7 +6,7 @@ interface MeterBarProps {
   initialValue: number;
 }
 
-const MeterBar: React.FC<MeterBarProps> = ({ steps, initialValue }) => {
+const MeterBar = ({ steps, initialValue }: MeterBarProps): JSX.Element => {
   const [value, setValue] = useState(initialValue);
   const [markerPosition, setMarkerPosition] = useState(0);
 

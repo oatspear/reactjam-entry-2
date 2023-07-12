@@ -4,7 +4,7 @@ import './GridComponent.css';
 // Define the type for component props (if any)
 interface GridComponentProps {}
 
-const GridComponent: React.FC<GridComponentProps> = () => {
+const GridComponent = (): JSX.Element => {
   return (
     <div className="grid-container">
       <div className="sub-grid">

@@ -1,11 +1,28 @@
 import { useEffect, useState } from "react"
 import reactLogo from "./assets/rune.svg"
 import viteLogo from "/vite.svg"
+
 import "./App.css"
 import { GameState } from "./logic.ts"
 
+import ModalPopup from './components/ModalPopup';
+import MeterBar from './components/MeterBar';
+import GridComponent from './components/GridComponent';
+import ActionBar from './components/ActionBar';
+
+
 function App() {
   const [game, setGame] = useState<GameState>()
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   useEffect(() => {
     Rune.initClient({
       onChange: ({ newGame }) => {
@@ -20,6 +37,16 @@ function App() {
 
   return (
     <>
+      <div>
+        <h1>My App</h1>
+        <MeterBar steps={7} initialValue={3} />
+        <GridComponent />
+        <ActionBar />
+        <button onClick={openModal}>Open Modal</button>
+        {isModalOpen && (
+          <ModalPopup message="Hello, I'm a modal!" onClose={closeModal} />
+        )}
+      </div>
       <div>
         <a href="https://vitejs.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />

@@ -6,7 +6,7 @@ import './ActionBar.css';
 
 // const PrintName2 = ({ prop1, prop2 }: Props): JSX.Element => { /** */}
 
-const ActionBar: React.FC = () => {
+const ActionBar = (): JSX.Element => {
   const [isActionBarVisible, setIsActionBarVisible] = useState(false);
 
   const toggleActionBar = () => {
@@ -14,17 +14,19 @@ const ActionBar: React.FC = () => {
   };
 
   return (
-    <div className={`action-bar ${isActionBarVisible ? 'visible' : ''}`}>
-      <div className="button-row">
-        <button className="action-button">Button 1</button>
-        <button className="action-button">Button 2</button>
-        <button className="action-button">Button 3</button>
-        <button className="action-button">Button 4</button>
+    <>
+      <div className={`action-bar ${isActionBarVisible ? 'visible' : ''}`}>
+        <div className="button-row">
+          <button className="action-button">Button 1</button>
+          <button className="action-button">Button 2</button>
+          <button className="action-button">Button 3</button>
+          <button className="action-button">Button 4</button>
+        </div>
       </div>
-      <button className="toggle-button" onClick={toggleActionBar}>
+      <button onClick={toggleActionBar}>
         Toggle Action Bar
       </button>
-    </div>
+    </>
   );
 };
 
