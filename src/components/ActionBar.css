@@ -1,0 +1,29 @@
+.action-bar {
+  position: fixed;
+  bottom: -100%; /* Start position outside the screen */
+  left: 0;
+  width: 100%;
+  padding: 16px;
+  background-color: #fff;
+  transition: bottom 0.3s ease-in-out;
+}
+
+.action-bar.visible {
+  bottom: 16px; /* Final position at the bottom with 16px gap */
+}
+
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.action-button {
+  height: 32px;
+  flex: 1;
+}
+
+.toggle-button {
+  width: 100%;
+}
+
