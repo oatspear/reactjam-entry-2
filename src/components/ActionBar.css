@@ -1,10 +1,11 @@
 .action-bar {
   position: fixed;
   bottom: -100%; /* Start position outside the screen */
-  left: 0;
-  width: 100%;
-  padding: 16px;
-  background-color: #fff;
+  left: 16px;
+  right: 16px;
+  /* width: 80%; */
+  padding: 16px 8px 32px 8px;
+  background-color: magenta;
   transition: bottom 0.3s ease-in-out;
 }
 
@@ -15,10 +16,9 @@
 .button-row {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
 }
 
 .action-button {
   height: 32px;
-  flex: 1;
+  flex-basis: 22.5%;
 }

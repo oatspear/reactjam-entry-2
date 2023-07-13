@@ -1,0 +1,11 @@
+.battlefield {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  background-color: cyan;
+}
+
+.battlefield * {
+  flex-basis: 30%;
+}

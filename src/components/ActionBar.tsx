@@ -17,10 +17,10 @@ const ActionBar = (): JSX.Element => {
     <>
       <div className={`action-bar ${isActionBarVisible ? 'visible' : ''}`}>
         <div className="button-row">
-          <button className="action-button">Button 1</button>
-          <button className="action-button">Button 2</button>
-          <button className="action-button">Button 3</button>
-          <button className="action-button">Button 4</button>
+          <button className="action-button">1</button>
+          <button className="action-button">2</button>
+          <button className="action-button">3</button>
+          <button className="action-button">4</button>
         </div>
       </div>
       <button onClick={toggleActionBar}>

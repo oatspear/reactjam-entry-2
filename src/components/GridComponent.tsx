@@ -8,17 +8,17 @@ const GridComponent = (): JSX.Element => {
   return (
     <div className="grid-container">
       <div className="sub-grid">
-        <div className="grid-item">Grid Item 1</div>
-        <div className="grid-item">Grid Item 2</div>
-        <div className="grid-item">Grid Item 3</div>
-        <div className="grid-item">Grid Item 4</div>
+        <div className="grid-item">1</div>
+        <div className="grid-item">2</div>
+        <div className="grid-item">3</div>
+        <div className="grid-item">4</div>
       </div>
-      <div className="empty-container">Empty Container</div>
+      <div className="empty-container">&nbsp;</div>
       <div className="sub-grid">
-        <div className="grid-item">Grid Item 1</div>
-        <div className="grid-item">Grid Item 2</div>
-        <div className="grid-item">Grid Item 3</div>
-        <div className="grid-item">Grid Item 4</div>
+        <div className="grid-item">1</div>
+        <div className="grid-item">2</div>
+        <div className="grid-item">3</div>
+        <div className="grid-item">4</div>
       </div>
     </div>
   );

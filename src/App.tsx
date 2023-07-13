@@ -7,7 +7,7 @@ import { GameState } from "./logic.ts"
 
 import ModalPopup from './components/ModalPopup';
 import MeterBar from './components/MeterBar';
-import GridComponent from './components/GridComponent';
+import Battlefield from './components/Battlefield';
 import ActionBar from './components/ActionBar';
 
 
@@ -40,7 +40,7 @@ function App() {
       <div>
         <h1>My App</h1>
         <MeterBar steps={7} initialValue={3} />
-        <GridComponent />
+        <Battlefield />
         <ActionBar />
         <button onClick={openModal}>Open Modal</button>
         {isModalOpen && (
