@@ -7,6 +7,7 @@
   padding: 16px 8px 32px 8px;
   background-color: magenta;
   transition: bottom 0.3s ease-in-out;
+  z-index: 100;
 }
 
 .action-bar.visible {

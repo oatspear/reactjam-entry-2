@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './ActionBar.css';
 
 // replace this FC practice with the below example
@@ -6,27 +6,21 @@ import './ActionBar.css';
 
 // const PrintName2 = ({ prop1, prop2 }: Props): JSX.Element => { /** */}
 
-const ActionBar = (): JSX.Element => {
-  const [isActionBarVisible, setIsActionBarVisible] = useState(false);
+interface ActionBarProps {
+  isVisible: boolean;
+  actions: Array<() => void>
+}
 
-  const toggleActionBar = () => {
-    setIsActionBarVisible(!isActionBarVisible);
-  };
-
+const ActionBar = ({isVisible, actions}: ActionBarProps): JSX.Element => {
   return (
-    <>
-      <div className={`action-bar ${isActionBarVisible ? 'visible' : ''}`}>
-        <div className="button-row">
-          <button className="action-button">1</button>
-          <button className="action-button">2</button>
-          <button className="action-button">3</button>
-          <button className="action-button">4</button>
-        </div>
+    <div className={`action-bar ${isVisible ? 'visible' : ''}`}>
+      <div className="button-row">
+        <button className="action-button" onClick={actions[0]}>1</button>
+        <button className="action-button" onClick={actions[1]}>2</button>
+        <button className="action-button" onClick={actions[2]}>3</button>
+        <button className="action-button" onClick={actions[3]}>4</button>
       </div>
-      <button onClick={toggleActionBar}>
-        Toggle Action Bar
-      </button>
-    </>
+    </div>
   );
 };
 

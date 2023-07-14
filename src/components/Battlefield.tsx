@@ -3,14 +3,16 @@ import GridComponent from './GridComponent';
 import './Battlefield.css';
 
 // Define the type for component props (if any)
-interface BattlefieldProps {}
+interface BattlefieldProps {
+  minions: Array<number>;
+}
 
-const Battlefield = (): JSX.Element => {
+const Battlefield = ({minions}: BattlefieldProps): JSX.Element => {
   return (
     <div className="battlefield">
-      <GridComponent />
-      <GridComponent />
-      <GridComponent />
+      <GridComponent minions={minions.slice(0, 4)} />
+      <GridComponent minions={minions.slice(4, 8)} />
+      <GridComponent minions={minions.slice(8, 12)} />
     </div>
   );
 };

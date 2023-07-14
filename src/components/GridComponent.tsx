@@ -2,23 +2,26 @@ import React from 'react';
 import './GridComponent.css';
 
 // Define the type for component props (if any)
-interface GridComponentProps {}
+interface GridComponentProps {
+  minions: Array<number>;
+}
 
-const GridComponent = (): JSX.Element => {
+function tfGridItem(minion: number) {
+  return <div className={"grid-item " + (!!minion ? "" : "empty")}>{minion}</div>;
+}
+
+const GridComponent = ({minions}: GridComponentProps): JSX.Element => {
+  const $enemies = [0, 0, 0, 0].map(tfGridItem);
+  const $minions = minions.map(tfGridItem);
+
   return (
     <div className="grid-container">
       <div className="sub-grid">
-        <div className="grid-item">1</div>
-        <div className="grid-item">2</div>
-        <div className="grid-item">3</div>
-        <div className="grid-item">4</div>
+        { $enemies }
       </div>
       <div className="empty-container">&nbsp;</div>
       <div className="sub-grid">
-        <div className="grid-item">1</div>
-        <div className="grid-item">2</div>
-        <div className="grid-item">3</div>
-        <div className="grid-item">4</div>
+        { $minions }
       </div>
     </div>
   );

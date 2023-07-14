@@ -14,6 +14,7 @@ import ActionBar from './components/ActionBar';
 function App() {
   const [game, setGame] = useState<GameState>()
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isActionBarVisible, setIsActionBarVisible] = useState(false);
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -23,13 +24,34 @@ function App() {
     setIsModalOpen(false);
   };
 
+  const toggleActionBar = () => {
+    setIsActionBarVisible(!isActionBarVisible);
+  };
+
+  const spawnMinion = () => {
+    const i = game?.minions.indexOf(0);
+    if (i == null) { return; }
+    if (i < 0) {
+      Rune.actions.clearMinions();
+    } else {
+      Rune.actions.spawnMinion({ index: i });
+    }
+  };
+
+  const barActions = [
+    spawnMinion,
+    spawnMinion,
+    spawnMinion,
+    spawnMinion,
+  ];
+
   useEffect(() => {
     Rune.initClient({
       onChange: ({ newGame }) => {
         setGame(newGame)
       },
     })
-  }, [])
+  }, []);  
 
   if (!game) {
     return <div>Loading...</div>
@@ -38,10 +60,10 @@ function App() {
   return (
     <>
       <div>
-        <h1>My App</h1>
         <MeterBar steps={7} initialValue={3} />
-        <Battlefield />
-        <ActionBar />
+        <Battlefield minions={game.minions} />
+        <button onClick={toggleActionBar}>Toggle Action Bar</button>
+        <ActionBar isVisible={isActionBarVisible} actions={barActions} />
         <button onClick={openModal}>Open Modal</button>
         {isModalOpen && (
           <ModalPopup message="Hello, I'm a modal!" onClose={closeModal} />

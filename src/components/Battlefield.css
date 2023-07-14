@@ -3,7 +3,7 @@
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
-  background-color: cyan;
+  background-color: #dedede;
 }
 
 .battlefield * {
