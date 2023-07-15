@@ -14,6 +14,8 @@
 .grid-item {
   min-width: 16px;
   background-color: lightseagreen;
+  text-shadow: -1px -1px 0 white, 1px 1px 0 white, -1px 1px 0 white, 1px -1px 0 white;
+  font-weight: bold;
 }
 
 .grid-item.empty {
@@ -22,4 +24,34 @@
 
 .empty-container {
   background-color: gray;
+  min-height: 4.5em;
+  margin: .25em 0;
+  position: relative;
+}
+
+.empty-container .power-label {
+  width: 1.5em;
+  height: 1.5em;
+  background-color: goldenrod;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) rotate(-45deg);
+  top: -.5em;
+  border: 2px solid brown;
+}
+
+.empty-container .power-label:last-child {
+  top: auto;
+  bottom: -.5em;
+}
+
+.empty-container .power-label > span {
+  position: absolute;
+  left: 50%;
+  top: -50%;
+  transform: translateX(-50%) rotate(45deg);
+  font-weight: bold;
+  text-shadow: -1px -1px 0 white, 1px 1px 0 white, -1px 1px 0 white, 1px -1px 0 white;
+  /* -webkit-text-stroke: 1px white; */
+  font-size: 1.5em;
 }

@@ -1,18 +1,25 @@
-import React from 'react';
 import GridComponent from './GridComponent';
 import './Battlefield.css';
+import { LocationState } from '../logic';
 
-// Define the type for component props (if any)
+
+// Define the type for component props
 interface BattlefieldProps {
-  minions: Array<number>;
+  locations: Array<LocationState>;
 }
 
-const Battlefield = ({minions}: BattlefieldProps): JSX.Element => {
+
+function newLocationComponent(location: LocationState, i: number): JSX.Element {
+  const enemies = location.minions[0];
+  const minions = location.minions[1];
+  return (<GridComponent key={i} enemies={enemies} minions={minions} />);
+}
+
+
+const Battlefield = ({locations}: BattlefieldProps): JSX.Element => {
   return (
     <div className="battlefield">
-      <GridComponent minions={minions.slice(0, 4)} />
-      <GridComponent minions={minions.slice(4, 8)} />
-      <GridComponent minions={minions.slice(8, 12)} />
+      { locations.map(newLocationComponent) }
     </div>
   );
 };

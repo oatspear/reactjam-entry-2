@@ -29,13 +29,18 @@ function App() {
   };
 
   const spawnMinion = () => {
-    const i = game?.minions.indexOf(0);
-    if (i == null) { return; }
-    if (i < 0) {
-      Rune.actions.clearMinions();
-    } else {
-      Rune.actions.spawnMinion({ index: i });
+    if (game == null) { return; }
+    const team = 1;
+    for (let i = 0; i < game.locations.length; ++i) {
+      const minions = game.locations[i].minions[team];
+      for (let j = 0; j < minions.length; ++j) {
+        if (!minions[j]) {
+          Rune.actions.spawnMinion({ location: i, team: team, index: j });
+          return;
+        }
+      }
     }
+    Rune.actions.clearMinions();
   };
 
   const barActions = [
@@ -61,7 +66,7 @@ function App() {
     <>
       <div>
         <MeterBar steps={7} initialValue={3} />
-        <Battlefield minions={game.minions} />
+        <Battlefield locations={game.locations} />
         <button onClick={toggleActionBar}>Toggle Action Bar</button>
         <ActionBar isVisible={isActionBarVisible} actions={barActions} />
         <button onClick={openModal}>Open Modal</button>
@@ -77,7 +82,6 @@ function App() {
           <img src={reactLogo} className="logo rune" alt="Rune logo" />
         </a>
       </div>
-      <h1>Vite + Rune</h1>
       <div className="card">
         <button onClick={() => Rune.actions.increment({ amount: 1 })}>
           count is {game.count}
