@@ -10,13 +10,26 @@ import type { Players, RuneClient } from "rune-games-sdk/multiplayer"
 
 
 export const TIME_PER_TURN: number = 45;  // seconds
-export const MINIONS_PER_LOCATION: number = 4;
+export const SQUADRONS_PER_LOCATION: number = 4;
+export const MAX_SQUADRON_SIZE: number = 6;
+
+
+export enum GameplayPhase {
+  BATTLE_PLAN,
+  BATTLE_RESULT,
+}
 
 
 export enum Role {
-  TANK = 1,
+  NONE = 0,
+  TANK,
   DAMAGE,
-  SUPPORT,
+  // SUPPORT,
+}
+
+
+export enum EventType {
+  
 }
 
 
@@ -43,46 +56,121 @@ function newPlayerState(id: string, team: number, deck?: Array<number>): PlayerS
 // -----------------------------------------------------------------------------
 
 
-export interface MinionState {
-  index: number;
+export interface MinionData {
+  // index: number;
   minionType: number;
   power: number;
-  ability: number;
   role: Role;
-  powerBonus: number;
 }
 
 
-function newMinionState(index: number, minionType: number): MinionState {
+function newMinionData(minionType: number): MinionData {
   return {
-    index,
+    // index,
     minionType,
     power: 1,
-    ability: 0,
     role: Role.TANK,
-    powerBonus: 0,
   };
 }
 
 
 // -----------------------------------------------------------------------------
-// Location State (One Component of the Battle Board)
+// Squadron State
 // -----------------------------------------------------------------------------
 
 
-export interface LocationState {
-  index: number;
-  minions: Array<Array<MinionState | null>>;
+// Each army has a row of minions for each role.
+export interface Squadron {
+  minionType: number;
+  role: Role;
+  power: number;
+  size: number;
 }
 
 
-function newMinionSlotsArray(): Array<MinionState | null> {
-  return [null, null, null, null];
+function newSquadron(minion: MinionData, size: number): Squadron {
+  return {
+    minionType: minion.minionType,
+    role: minion.role,
+    power: minion.power,
+    size,
+  };
 }
 
 
-function newLocationState(index: number): LocationState {
-  return { index, minions: [newMinionSlotsArray(), newMinionSlotsArray()] };
+// -----------------------------------------------------------------------------
+// Army State
+// -----------------------------------------------------------------------------
+
+
+export interface Army {
+  squadrons: Squadron[];
+}
+
+
+function newArmy(): Army {
+  return { squadrons: [] };
+}
+
+
+// sorted insertion (defensive order)
+function addSquadron(army: Army, squadron: Squadron): void {
+  const squadrons = army.squadrons;
+  for (let i = squadrons.length; i > 0; i--) {
+    const other: Squadron = squadrons[i-1];
+    if (other.role <= squadron.role) {
+      squadrons.splice(i, 0, squadron);
+      return;
+    }
+  }
+  squadrons.push(squadron);
+}
+
+
+// -----------------------------------------------------------------------------
+// Location State
+// -----------------------------------------------------------------------------
+
+
+export interface Location {
+  armies: Army[];
+}
+
+
+function newLocation(): Location {
+  return { armies: [newArmy(), newArmy()] };
+}
+
+
+// -----------------------------------------------------------------------------
+// Battlefield State
+// -----------------------------------------------------------------------------
+
+
+export interface Battlefield {
+  locations: Location[];
+  activeRole: Role;
+}
+
+
+function newBattlefield(): Battlefield {
+  return {
+    locations: [newLocation(), newLocation(), newLocation()],
+    activeRole: Role.DAMAGE,
+  };
+}
+
+
+function countLivingMinions(battle: Battlefield): number {
+  let n: number = 0;
+  for (const location of battle.locations) {
+    for (const army of location.armies) {
+      for (const squadron of army.squadrons) {
+        n += squadron.size;
+      }
+    }
+  }
+  return n;
 }
 
 
@@ -92,64 +180,58 @@ function newLocationState(index: number): LocationState {
 
 
 export interface GameState {
-  turnsTaken: number,
-  timer: number,
-  locations: Array<LocationState>,
-  players: Array<PlayerState>
+  phase: GameplayPhase;
+  turnsTaken: number;
+  timer: number;
+  battlefield: Battlefield;
+  players: PlayerState[];
 }
 
 
 function resolveCombatPhase(game: GameState): void {
-  
-}
-
-
-function resolveLocationCombat(location: LocationState): void {
-
-}
-
-
-function sortInAttackingOrder(minions: MinionState[]): MinionState[][] {
-  // order is DAMAGE > TANK > SUPPORT
-  const sorted: MinionState[][] = [[], [], []];
-  for (const minion of minions) {
-    switch (minion.damageType) {
-      case DamageType.RANGED:
-        sorted[0].push(minion);
-        break;
-      case DamageType.MELEE:
-        sorted[1].push(minion);
-        break;
-      case DamageType.SPELL:
-        sorted[2].push(minion);
-        break;
+  game.phase = GameplayPhase.BATTLE_RESULT;
+  const battle = game.battlefield;
+  const attackingOrder = [Role.DAMAGE, Role.TANK];
+  for (const role of attackingOrder) {
+    if (countLivingMinions(battle) <= 0) {
+      break;
+    }
+    for (const location of battle.locations) {
+      resolveLocationCombat(game, location, role);
     }
   }
-  return sorted;
 }
 
 
-function sortInDefendingOrder(minions: MinionState[]): MinionState[] {
-  // order is MELEE > SPELL > RANGED
-  const sorted = [];
-  const spell = [];
-  const ranged = [];
-  for (const minion of minions) {
-    switch (minion.damageType) {
-      case DamageType.MELEE:
-        sorted.push(minion);
-        break;
-      case DamageType.SPELL:
-        spell.push(minion);
-        break;
-      case DamageType.RANGED:
-        ranged.push(minion);
-        break;
+function resolveLocationCombat(game: GameState, location: Location, role: Role): void {
+  const result: Squadron[][] = [];
+  const n: number = location.armies.length;
+  for (let i = 0; i < n; ++i) {
+    const attackers: Squadron[] = filterSquadronsByRole(location.armies[i].squadrons, role);
+    if (attackers.length === 0) { continue; }
+
+    let power: number = 0;
+    for (const squadron of attackers) {
+      power += squadron.power * squadron.size;
+    }
+
+    const k: number = (i + 1) % n;
+    const defenders: Squadron[] = location.armies[k].squadrons;
+    for (const squadron of defenders) {
+      
     }
   }
-  sorted.push.apply(sorted, spell);
-  sorted.push.apply(sorted, ranged);
-  return sorted;
+}
+
+
+function filterSquadronsByRole(squadrons: Squadron[], role: Role): Squadron[] {
+  const result: Squadron[] = [];
+  for (const squadron of squadrons) {
+    if (squadron.role === role) {
+      result.push(squadron);
+    }
+  }
+  return result;
 }
 
 
@@ -180,13 +262,10 @@ Rune.initLogic({
 
   setup(): GameState {
     return {
+      phase: GameplayPhase.BATTLE_PLAN,
       turnsTaken: 0,
       timer: TIME_PER_TURN,
-      locations: [
-        newLocationState(0),
-        newLocationState(1),
-        newLocationState(2),
-      ],
+      battlefield: newBattlefield(),
       players: [
         newPlayerState("1", 0),
         newPlayerState("2", 1),
