@@ -39,6 +39,13 @@ export enum PlayerIndex {
   PLAYER2 = 1,
 }
 
+export enum Direction {
+  NORTH,
+  SOUTH,
+  EAST,
+  WEST,
+}
+
 
 // -----------------------------------------------------------------------------
 // Minion Data
@@ -285,15 +292,15 @@ function getAdjacentTiles(i: number): number[] {
 }
 
 
-function getAdjacentEnemies(battlefield: Battlefield, i: number): number[] {
-  let uid: number = battlefield.tiles[i].minion;
-  let minion: Minion | undefined = battlefield.minions[uid];
+function getAdjacentEnemies(game: GameState, i: number): number[] {
+  let uid: number = game.battlefield.tiles[i].minion;
+  let minion: Minion | undefined = game.battlefield.minions[uid];
   const enemies: number[] = [];
   if (minion != null) {
     const pi = minion.owner;
     for (const k of getAdjacentTiles(i)) {
-      uid = battlefield.tiles[k].minion;
-      minion = battlefield.minions[uid];
+      uid = game.battlefield.tiles[k].minion;
+      minion = game.battlefield.minions[uid];
       if (minion != null && minion.owner != pi) {
         enemies.push(k);
       }
@@ -322,6 +329,19 @@ function newPlayerState(id: string, team: number, deck?: Array<number>): PlayerS
 
 
 // -----------------------------------------------------------------------------
+// Game Actions and Outcomes
+// -----------------------------------------------------------------------------
+
+
+export interface MinionMovement {
+  minion: number;
+  from: number;
+  to: number;
+  remaining: number;
+}
+
+
+// -----------------------------------------------------------------------------
 // Game State
 // -----------------------------------------------------------------------------
 
@@ -332,7 +352,9 @@ export interface GameState {
   timer: number;
   battlefield: Battlefield;
   players: PlayerState[];
-  events: GameEvent[];
+  events: Record<string, number>[];
+  currentPlayer: string;
+  movementCommand?: MinionMovement;
 }
 
 
@@ -342,55 +364,38 @@ export interface GameState {
 
 
 export enum EventType {
-  MINION_MOVING,
+  MINION_MOVING = 1,
   MINION_MOVED,
   MINION_ENTERED_BATTLEFIELD,
 }
 
 
-export type GameEvent = {
-  type: EventType,
-}
-
-
-export interface MinionMovingEvent extends GameEvent {
-  type: EventType.MINION_MOVING;
-  minion: number;
-  from: number;
-  to: number;
-}
-
-
 function emitMinionMoving(game: GameState, minion: number, from: number, to: number): void {
-  const event: MinionMovingEvent = { type: EventType.MINION_MOVING, minion, from, to };
-  game.events.push(event);
-}
-
-
-export interface MinionMovedEvent extends GameEvent {
-  type: EventType.MINION_MOVED;
-  minion: number;
-  from: number;
-  to: number;
+  game.events.push({
+    type: EventType.MINION_MOVING,
+    minion,
+    from,
+    to,
+  });
 }
 
 
 function emitMinionMoved(game: GameState, minion: number, from: number, to: number): void {
-  const event: MinionMovedEvent = { type: EventType.MINION_MOVED, minion, from, to };
-  game.events.push(event);
-}
-
-
-export interface MinionEnteredBattlefieldEvent extends GameEvent {
-  type: EventType.MINION_ENTERED_BATTLEFIELD;
-  minion: number;
-  tile: number;
+  game.events.push({
+    type: EventType.MINION_MOVED,
+    minion,
+    from,
+    to,
+  });
 }
 
 
 function emitMinionEnteredBattlefield(game: GameState, minion: number, tile: number): void {
-  const event: MinionEnteredBattlefieldEvent = { type: EventType.MINION_ENTERED_BATTLEFIELD, minion, tile };
-  game.events.push(event);
+  game.events.push({
+    type: EventType.MINION_ENTERED_BATTLEFIELD,
+    minion,
+    tile,
+  });
 }
 
 
