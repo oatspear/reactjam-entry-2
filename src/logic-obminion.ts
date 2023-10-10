@@ -39,11 +39,11 @@ export enum PlayerIndex {
   PLAYER2 = 1,
 }
 
-export enum Direction {
-  NORTH,
-  SOUTH,
-  EAST,
-  WEST,
+export enum EventType {
+  REQUIRE_INPUT,
+  MINION_MOVING,
+  MINION_MOVED,
+  MINION_SPAWNED,
 }
 
 
@@ -235,38 +235,38 @@ function newBattlefield(): Battlefield {
 }
 
 
-export function getPath(i: number, j: number, n: number): number[] {
-    const paths: Record<number, number[]> = getPaths(i, n);
+export function getPath(battlefield: Battlefield, i: number, j: number, n: number): number[] {
+    const paths: Record<number, number[]> = getPaths(battlefield, i, n);
     return paths[j] || [];
 }
 
 
-export function getPathsNSteps(i: number, n: number): number[][] {
-    const paths: Record<number, number[]> = getPaths(i, n);
+export function getPathsNSteps(battlefield: Battlefield, i: number, n: number): number[][] {
+    const paths: Record<number, number[]> = getPaths(battlefield, i, n);
     delete paths[i];
     return Object.values(paths);
 }
 
 
-function getPaths(i: number, n: number): Record<number, number[]> {
+function getPaths(battlefield: Battlefield, i: number, n: number): Record<number, number[]> {
     const paths: Record<number, number[]> = {};
     paths[i] = [];
-    buildPaths(paths, [], i, n);
+    buildPaths(battlefield, paths, [], i, n);
     return paths;
 }
 
 
-function buildPaths(paths: Record<number, number[]>, path: number[], i: number, n: number): void {
+function buildPaths(battlefield: Battlefield, paths: Record<number, number[]>, path: number[], i: number, n: number): void {
     if (n <= 0) { return }
     const adjacent: number[] = getAdjacentTiles(i);
     for (const j of adjacent) {
-      // if (!!tiles[j].minion) { continue }
+      if (!!battlefield.tiles[j].minion) { continue }
       const previous = paths[j];
       if (previous != null && previous.length <= (path.length + 1)) { continue }
       var current = path.slice();
       current.push(j);
       paths[j] = current;
-      buildPaths(paths, current, j, n - 1);
+      buildPaths(battlefield, paths, current, j, n - 1);
     }
 }
 
@@ -330,28 +330,11 @@ function newPlayerState(id: string, team: number, deck?: Array<number>): PlayerS
 
 
 // -----------------------------------------------------------------------------
-// Game Actions and Outcomes
-// -----------------------------------------------------------------------------
-
-
-export interface MinionMovement {
-  minion: number;
-  from: number;
-  to: number;
-  remaining: number;
-}
-
-
-export interface MinionSpawn {
-  minion: number;
-  tile: number;
-  movement: number;
-}
-
-
-// -----------------------------------------------------------------------------
 // Game State
 // -----------------------------------------------------------------------------
+
+
+type EventQueue = Record<string, number>[];
 
 
 export interface GameState {
@@ -360,13 +343,69 @@ export interface GameState {
   timer: number;
   battlefield: Battlefield;
   players: PlayerState[];
-  events: Record<string, number>[];
+  events: EventQueue;
 
   minionIdGenerator: number;
   minions: Record<number, Minion>;
   currentPlayer: number;
-  movementCommand?: MinionMovement;
-  spawnCommand?: MinionSpawn;
+}
+
+
+// -----------------------------------------------------------------------------
+// Game Events
+// -----------------------------------------------------------------------------
+
+
+export interface GameEvent {
+  type: EventType;
+}
+
+
+export interface InputRequiredEvent extends GameEvent {
+  type: EventType.REQUIRE_INPUT;
+  player: number;
+}
+
+
+function emitInputRequired(events: EventQueue, player: PlayerIndex): void {
+  events.push({
+    type: EventType.REQUIRE_INPUT,
+    player,
+  });
+}
+
+
+export interface MinionMovedEvent extends GameEvent {
+  type: EventType.MINION_MOVED;
+  minion: number;
+  from: number;
+  to: number;
+}
+
+
+function emitMinionMoved(events: EventQueue, minion: number, from: number, to: number): void {
+  events.push({
+    type: EventType.MINION_MOVED,
+    minion,
+    from,
+    to,
+  });
+}
+
+
+export interface MinionSpawnedEvent extends GameEvent {
+  type: EventType.MINION_SPAWNED;
+  minion: number;
+  tile: number;
+}
+
+
+function emitMinionSpawned(events: EventQueue, minion: number, tile: number): void {
+  events.push({
+    type: EventType.MINION_SPAWNED,
+    minion,
+    tile,
+  });
 }
 
 
@@ -394,26 +433,27 @@ function moveAlongPath(game: GameState, i: number, path: number[]): void {
   const uid = tiles[i].minion;
   const minion = game.battlefield.minions[uid];
   for (const k of path) {
-    emitMinionMoving(game, uid, j, k);
+    // emitMinionMoving(game, uid, j, k);
     tiles[j].minion = 0;
     tiles[k].minion = uid;
     minion.position = k;
-    emitMinionMoved(game, uid, j, k);
+    emitMinionMoved(game.events, uid, j, k);
     j = k;
   }
 }
 
 
 function placeMinionOnBattlefield(game: GameState, minion: Minion, tile: number): boolean {
-  // assert(minion != null)
-  // assert(tiles[ti].minion == null)
+  if (minion == null) { return false }
+  const tiles = game.battlefield.tiles;
+  if (!!tiles[tile].minion) { return false }
   const uid = minion.uid;
   game.battlefield.minions[uid] = minion;
-  const tiles = game.battlefield.tiles;
-  tiles[tile].minion = minion.uid;
+  tiles[tile].minion = uid;
   minion.location = BoardLocation.BATTLEFIELD;
   minion.position = tile;
-  emitMinionEnteredBattlefield(game, uid, tile);
+  // emitMinionEnteredBattlefield(game, uid, tile);
+  emitMinionSpawned(game.events, uid, tile);
   return true;
 }
 
@@ -455,7 +495,7 @@ Rune.initLogic({
   maxPlayers: 2,
 
   setup(): GameState {
-    return {
+    const game: GameState = {
       phase: GameplayPhase.INPUT_ANY,
       turnsTaken: 0,
       timer: TIME_PER_TURN,
@@ -465,7 +505,9 @@ Rune.initLogic({
         newPlayerState("2", 1),
       ],
       minionIdGenerator: 0,
-    }
+    };
+    emitInputRequired(game.events, PlayerIndex.PLAYER1);
+    return game;
   },
 
   update: ({ game }) => {
