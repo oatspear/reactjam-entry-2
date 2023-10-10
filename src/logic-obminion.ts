@@ -15,8 +15,8 @@ export const MAX_SQUADRON_SIZE: number = 6;
 
 
 export enum GameplayPhase {
-  BATTLE_PLAN,
-  BATTLE_RESULT,
+  INPUT_ANY,
+  INPUT_MOVEMENT,
 }
 
 
@@ -316,15 +316,16 @@ function getAdjacentEnemies(game: GameState, i: number): number[] {
 
 
 export interface PlayerState {
-  id: string,
-  team: number,
-  deck: Array<number>
+  id: string;
+  index: PlayerIndex;
+  team: number;
+  deck: Array<number>;
 }
 
 
 function newPlayerState(id: string, team: number, deck?: Array<number>): PlayerState {
   deck = deck || [];
-  return { id, team, deck };
+  return { id, team, deck, index: PlayerIndex.PLAYER1 };
 }
 
 
@@ -341,6 +342,13 @@ export interface MinionMovement {
 }
 
 
+export interface MinionSpawn {
+  minion: number;
+  tile: number;
+  movement: number;
+}
+
+
 // -----------------------------------------------------------------------------
 // Game State
 // -----------------------------------------------------------------------------
@@ -353,55 +361,31 @@ export interface GameState {
   battlefield: Battlefield;
   players: PlayerState[];
   events: Record<string, number>[];
-  currentPlayer: string;
+
+  minionIdGenerator: number;
+  minions: Record<number, Minion>;
+  currentPlayer: number;
   movementCommand?: MinionMovement;
-}
-
-
-// -----------------------------------------------------------------------------
-// Game Events
-// -----------------------------------------------------------------------------
-
-
-export enum EventType {
-  MINION_MOVING = 1,
-  MINION_MOVED,
-  MINION_ENTERED_BATTLEFIELD,
-}
-
-
-function emitMinionMoving(game: GameState, minion: number, from: number, to: number): void {
-  game.events.push({
-    type: EventType.MINION_MOVING,
-    minion,
-    from,
-    to,
-  });
-}
-
-
-function emitMinionMoved(game: GameState, minion: number, from: number, to: number): void {
-  game.events.push({
-    type: EventType.MINION_MOVED,
-    minion,
-    from,
-    to,
-  });
-}
-
-
-function emitMinionEnteredBattlefield(game: GameState, minion: number, tile: number): void {
-  game.events.push({
-    type: EventType.MINION_ENTERED_BATTLEFIELD,
-    minion,
-    tile,
-  });
+  spawnCommand?: MinionSpawn;
 }
 
 
 // -----------------------------------------------------------------------------
 // Game Logic
 // -----------------------------------------------------------------------------
+
+
+function isMovementAllowed(game: GameState, from: number, to: number): boolean {
+  const tile: Tile = game.battlefield.tiles[to];
+  // is the tile already occupied?
+  if (!!tile.minion) { return false; }
+  // is the tile valid?
+  if (from < 0 || from > 24) { return false; }
+  if (to < 0 || to > 24) { return false; }
+  // are the tiles adjacent?
+  const k = to - from;
+  return (k === 1) || (k === -1) || (k === 5) || (k === -5);
+}
 
 
 function moveAlongPath(game: GameState, i: number, path: number[]): void {
@@ -439,9 +423,20 @@ function placeMinionOnBattlefield(game: GameState, minion: Minion, tile: number)
 // -----------------------------------------------------------------------------
 
 
+type MoveActionPayload = {
+  minionId: number;
+  tileId: number;
+};
+
+type SpawnActionPayload = {
+  speciesId: number;
+  tileId: number;
+};
+
+
 type GameActions = {
-  spawnMinion: (params: { location: number, team: number, minionType: number }) => void
-  clearMinions: () => void
+  move: (params: MoveActionPayload) => void;
+  spawn: (params: SpawnActionPayload) => void;
 };
 
 
@@ -461,7 +456,7 @@ Rune.initLogic({
 
   setup(): GameState {
     return {
-      phase: GameplayPhase.BATTLE_PLAN,
+      phase: GameplayPhase.INPUT_ANY,
       turnsTaken: 0,
       timer: TIME_PER_TURN,
       battlefield: newBattlefield(),
@@ -469,12 +464,13 @@ Rune.initLogic({
         newPlayerState("1", 0),
         newPlayerState("2", 1),
       ],
+      minionIdGenerator: 0,
     }
   },
 
   update: ({ game }) => {
     if (game.timer <= 0) {
-      resolveCombatPhase(game);
+      // resolveCombatPhase(game);
       game.timer = TIME_PER_TURN;
     } else {
       --game.timer;
@@ -482,17 +478,74 @@ Rune.initLogic({
   },
 
   actions: {
-    spawnMinion({ location, team, minionType }, { game }) {
-      const minions: MinionState[] = game.locations[location].minions[team];
-      const index: number = minions.length
-      if (minions.length < MINIONS_PER_LOCATION) {
-        minions.push(newMinionState(index, minionType));
+    move({ minionId, tileId }, { game, playerId }) {
+      const player: PlayerState = game.players[game.currentPlayer];
+      // is it the player's turn?
+      if (player.id != playerId) { return }
+      // can the selected minion move?
+      const minion: Minion = game.battlefield.minions[minionId];
+      if (minion == null) { return }
+      if (minion.owner != player.index) { return }
+      if (minion.location != BoardLocation.BATTLEFIELD) { return }
+      if (!isMovementAllowed(game, minion.position, tileId)) { return }
+      // can the player issue movement commands?
+      let movement: number = minion.movement - 1;
+      if (game.phase === GameplayPhase.INPUT_MOVEMENT) {
+        // this is a continuation of a multi-step command
+        if (game.spawnCommand != null) {
+          if (game.spawnCommand.minion != minionId) { return }
+        } else if (game.movementCommand != null) {
+          if (game.movementCommand.minion != minionId) { return }
+          movement = game.movementCommand.remaining;
+        } 
+      }
+      else if (game.phase != GameplayPhase.INPUT_ANY) { return }
+      if (movement <= 0) { return }
+      // issue movement command
+      minion.position = tileId;
+      game.movementCommand = {
+        minion: minionId,
+        from: minion.location,
+        to: tileId,
+        remaining: movement - 1,
+      };
+      // transition to the next phase
+      if (movement === 1) {
+        game.currentPlayer = (game.currentPlayer + 1) % game.players.length;
+        game.phase.INPUT_ANY;
       }
     },
 
-    clearMinions(_noargs, { game }) {
-      for (const location of game.locations) {
-        location.minions = [];
+    spawn({ speciesId, tileId }, { game, playerId }) {
+      const player: PlayerState = game.players[game.currentPlayer];
+      // is it the player's turn?
+      if (player.id != playerId) { return }
+      // can the player issue spawn commands?
+      if (game.phase != GameplayPhase.INPUT_ANY) { return }
+      const tile: Tile = game.battlefield.tiles[tileId];
+      // is the tile a spawn point?
+      if (tile.type != TileType.SPAWN) { return }
+      // is the spawn point owned by the player?
+      if (tile.owner != player.index) { return }
+      // is the spawn point free?
+      if (!!tile.minion) { return }
+      // generate minion
+      const species: MinionData = player.deck[speciesId];
+      const uid: number = ++game.minionIdGenerator;
+      const minion: Minion = newMinion(uid, player.index, species);
+      minion.location = BoardLocation.BATTLEFIELD;
+      minion.position = tileId;
+      game.movementCommand = null;
+      game.spawnCommand = {
+        minion: uid,
+        tile: tileId,
+        movement: minion.movement - 1,
+      };
+      // transition to the next phase
+      if (minion.movement > 1) {
+        game.phase = GameplayPhase.INPUT_MOVEMENT;
+      } else {
+
       }
     },
   },
