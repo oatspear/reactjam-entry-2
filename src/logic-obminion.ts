@@ -774,6 +774,7 @@ function resolveCombat(game: GameState, attacker: Minion, defender: Minion): Com
     // emit_signal("minion_survived", _arg_minion.position)
     attacker.health = ah;
   }
+  // emit_signal("combat_ended", _arg_minion.position, _arg_target.position)
   if (attackerDied) {
     return defenderDied ? CombatResult.DRAW : CombatResult.LOSS;
   } else {
