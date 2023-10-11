@@ -44,6 +44,12 @@ export enum PlayerIndex {
   PLAYER2 = 1,
 }
 
+export enum CombatResult {
+  LOSS = -1,
+  DRAW = 0,
+  WIN = 1,
+}
+
 export enum EventType {
   REQUIRE_INPUT,
   MINION_MOVING,
@@ -734,6 +740,49 @@ function moveAlongPath(game: GameState, i: number, path: number[]): void {
 
 
 // -----------------------------------------------------------------------------
+// Game Logic - Combat
+// -----------------------------------------------------------------------------
+
+
+function resolveCombat(game: GameState, attacker: Minion, defender: Minion): CombatResult {
+  // emit_signal("combat_started", _arg_minion.position, _arg_target.position)
+  // emit_signal("minion_attacking", _arg_minion.position, _arg_target.position)
+  // emit_signal("minion_defending", _arg_target.position, _arg_minion.position)
+  const ap = attacker.power;
+  const dp = defender.power;
+  const ah = attacker.health;
+  const dh = defender.health;
+  let attackerDied = false;
+  let defenderDied = false;
+  // emit_signal("minion_attacked", _arg_minion.position, _arg_target.position)
+  defender.health -= ap;
+  // emit_signal("minion_damaged", _arg_target.position, ap)
+  // emit_signal("minion_defended", _arg_target.position, _arg_minion.position)
+  attacker.health -= dp;
+  // emit_signal("minion_damaged", _arg_minion.position, dp)
+  if (defender.health <= 0) {
+    defenderDied = true;
+    killMinion(game, defender);
+  } else {
+    // emit_signal("minion_survived", _arg_target.position)
+    defender.health = dh;
+  }
+  if (attacker.health <= 0) {
+    attackerDied = true;
+    killMinion(game, attacker);
+  } else {
+    // emit_signal("minion_survived", _arg_minion.position)
+    attacker.health = ah;
+  }
+  if (attackerDied) {
+    return defenderDied ? CombatResult.DRAW : CombatResult.LOSS;
+  } else {
+    return defenderDied ? CombatResult.WIN : CombatResult.DRAW;
+  }
+}
+
+
+// -----------------------------------------------------------------------------
 // Game Logic - Miscellaneous
 // -----------------------------------------------------------------------------
 
@@ -872,7 +921,7 @@ function isGraveyardFull(player: PlayerState): boolean {
 }
 
 
-function minionDeath(game: GameState, minion: Minion): void {
+function killMinion(game: GameState, minion: Minion): void {
   // emit_signal("minion_died", pi, minion.index, minion.position)
   removeFromBattle(game, minion);
   if (minion.owner === PlayerIndex.NONE) { return }
