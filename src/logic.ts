@@ -212,7 +212,7 @@ function newUnpathableTile(index: number): Tile {
 
 export interface Battlefield {
   tiles: Tile[];
-  // minions: Record<number, Minion>;
+  minions: Record<number, Minion>;
 }
 
 
@@ -228,7 +228,7 @@ export interface Battlefield {
 
 function newBattlefield(): Battlefield {
   return {
-    // minions: {},
+    minions: {},
     tiles: [
       // row 1
       newSpawnTile(0, PlayerIndex.PLAYER1),
@@ -386,13 +386,13 @@ function getAdjacentTiles(battlefield: Battlefield, i: number): number[] {
 
 function getAdjacentEnemies(game: GameState, i: number): number[] {
   let uid: number = game.battlefield.tiles[i].minion;
-  let minion: Minion | undefined = game.minions[uid];
+  let minion: Minion | undefined = game.battlefield.minions[uid];
   const enemies: number[] = [];
   if (minion != null) {
     const pi = minion.owner;
     for (const k of getAdjacentTiles(game.battlefield, i)) {
       uid = game.battlefield.tiles[k].minion;
-      minion = game.minions[uid];
+      minion = game.battlefield.minions[uid];
       if (minion != null && minion.owner != pi) {
         enemies.push(k);
       }
@@ -466,7 +466,7 @@ export interface GameState {
   events: EventQueue;
 
   minionIdGenerator: number;
-  minions: Record<number, Minion>;
+  // minions: Record<number, Minion>;
   currentPlayer: number;
 }
 
@@ -587,7 +587,7 @@ function trySpawnMinion(
   if (!placeMinionOnBattlefield(game, minion, at, true)) { return null }
   // register the minion and the event
   player.resources -= species.cost;
-  game.minions[uid] = minion;
+  game.battlefield.minions[uid] = minion;
   emitMinionSpawned(game.events, uid, at);
   return minion;
 }
@@ -639,7 +639,7 @@ function tryMoveCommand(game: GameState, playerId: string, from: number, to: num
   const tile: Tile = game.battlefield.tiles[from];
   if (!tile.minion) { return false }
   // does the player control this minion?
-  const minion: Minion = game.minions[tile.minion];
+  const minion: Minion = game.battlefield.minions[tile.minion];
   if (minion.owner != player.index) { return false }
   // try to attack-move to the destination tile
   return tryAttackMove(game, minion, to);
@@ -662,7 +662,7 @@ function tryAttackMove(game: GameState, minion: Minion, to: number): boolean {
   const tile: Tile = game.battlefield.tiles[to];
   if (!!tile.minion) {
     // is it friend or foe?
-    const other: Minion = game.minions[tile.minion];
+    const other: Minion = game.battlefield.minions[tile.minion];
     // cannot overlap with friendly minions
     if (minion.owner === other.owner) { return false }
     // move to the tile just before the enemy
@@ -684,7 +684,7 @@ function moveAlongPath(game: GameState, i: number, path: number[]): void {
   let j = i;
   const tiles = game.battlefield.tiles;
   const uid = tiles[i].minion;
-  const minion = game.minions[uid];
+  const minion = game.battlefield.minions[uid];
   for (const k of path) {
     // emitMinionMoving(game, uid, j, k);
     tiles[j].minion = 0;
@@ -830,7 +830,7 @@ function removeFromBattle(game: GameState, minion: Minion, emit: boolean = true)
   const tile: Tile = tiles[i];
   if (tile.minion != uid) { return false }
   tile.minion = 0;
-  delete game.minions[uid];
+  delete game.battlefield.minions[uid];
   // emit_signal("minion_exited_battlefield", minion)
   return true;
 }
@@ -842,10 +842,10 @@ function removeFromBattleByTile(game: GameState, i: number): Minion | null {
   const tile: Tile = tiles[i];
   const uid = tile.minion;
   if (!uid) { return null }
-  const minion = game.minions[uid];
+  const minion = game.battlefield.minions[uid];
   if (minion == null) { return null }
   tile.minion = 0;
-  delete game.minions[uid];
+  delete game.battlefield.minions[uid];
   // emit_signal("minion_exited_battlefield", minion)
   return minion;
 }
@@ -947,7 +947,7 @@ Rune.initLogic({
       players,
       events: [],
       minionIdGenerator: 0,
-      minions: [],
+      // minions: {},
       currentPlayer: PlayerIndex.PLAYER1,
     };
     setupPlayers(game);
