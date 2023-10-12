@@ -72,7 +72,7 @@ function App() {
   // <MeterBar steps={7} initialValue={3} />
   return (
     <>
-      <div>
+      <div className="flex-column-centered">
         <code>width: {width} ~ height: {height}</code>
         <BattlefieldView battlefield={game.battlefield} flip={flipBoard} />
         <button onClick={toggleActionBar}>Toggle Action Bar</button>
