@@ -3,7 +3,7 @@ import reactLogo from "./assets/rune.svg"
 import viteLogo from "/vite.svg"
 
 import "./App.css"
-import { GameState } from "./logic.ts"
+import { EventType, GameState } from "./logic.ts"
 
 import ModalPopup from './components/ModalPopup';
 // import MeterBar from './components/MeterBar';
@@ -11,8 +11,15 @@ import BattlefieldView from './components/BattlefieldView.tsx';
 import ActionBar from './components/ActionBar';
 
 
+function getWindowDimensions() {
+  const { innerWidth: width, innerHeight: height } = window;
+  return { width, height };
+}
+
+
 function App() {
-  const [game, setGame] = useState<GameState>()
+  const [game, setGame] = useState<GameState>();
+  const [myPlayerId, setMyPlayerId] = useState<string | undefined>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isActionBarVisible, setIsActionBarVisible] = useState(false);
 
@@ -30,17 +37,10 @@ function App() {
 
   const spawnMinion = () => {
     if (game == null) { return; }
-    const team = 1;
-    for (let i = 0; i < game.locations.length; ++i) {
-      const minions = game.locations[i].minions[team];
-      for (let j = 0; j < minions.length; ++j) {
-        if (!minions[j]) {
-          // Rune.actions.spawnMinion({ location: i, team: team, index: j });
-          return;
-        }
-      }
-    }
-    // Rune.actions.clearMinions();
+    const benchIndex: number = 0;
+    const spawnPoint: number = 0;
+    const moveTo: number = 0;
+    Rune.actions.spawn({ benchIndex, spawnPoint, moveTo });
   };
 
   const barActions = [
@@ -52,8 +52,9 @@ function App() {
 
   useEffect(() => {
     Rune.initClient({
-      onChange: ({ newGame }) => {
-        setGame(newGame)
+      onChange: ({ newGame, yourPlayerId }) => {
+        setGame(newGame);
+        setMyPlayerId(yourPlayerId);
       },
     })
   }, []);  
@@ -62,11 +63,18 @@ function App() {
     return <div>Loading...</div>
   }
 
+  const { height, width } = getWindowDimensions();
+  let flipBoard = false;
+  if (game != null && myPlayerId != null) {
+    flipBoard = game.players[0].id === myPlayerId;
+  }
+
   // <MeterBar steps={7} initialValue={3} />
   return (
     <>
       <div>
-        <BattlefieldView battlefield={game.battlefield} />
+        <code>width: {width} ~ height: {height}</code>
+        <BattlefieldView battlefield={game.battlefield} flip={flipBoard} />
         <button onClick={toggleActionBar}>Toggle Action Bar</button>
         <ActionBar isVisible={isActionBarVisible} actions={barActions} />
         <button onClick={openModal}>Open Modal</button>

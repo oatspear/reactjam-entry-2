@@ -104,7 +104,7 @@ function newMinionData(species: number): MinionData {
     power: 1,
     health: 1,
     movement: 1,
-    cost: 1,
+    cost: 0,
   };
 }
 
@@ -425,14 +425,20 @@ function newPlayerState(id: string, index: PlayerIndex, deck: Deck): PlayerState
 // Prepares the players to have a valid initial battle state.
 function setupPlayers(game: GameState): void {
   for (const player of game.players) {
+    // FIXME: initialize decks
+    player.deck.minions.push(1);
+    player.deck.minions.push(1);
+    player.deck.minions.push(1);
     // initialize benched minions
-    const bench = [];
+    const bench: MinionData[] = [];
     for (const speciesId of player.deck.minions) {
-      const uid: number = ++game.minionIdGenerator;
       const species = newMinionData(speciesId);
-      const minion = newMinion(uid, player.index, species);
-      bench.push(minion);
+      bench.push(species);
+      // const uid: number = ++game.minionIdGenerator;
+      // const minion = newMinion(uid, player.index, species);
+      // bench.push(minion);
     }
+    player.bench = bench;
     // empty graveyard
     player.graveyard.length = 0;
     // second player gets an extra resource
@@ -484,13 +490,15 @@ export interface GameEvent {
 export interface InputRequiredEvent extends GameEvent {
   type: EventType.REQUIRE_INPUT;
   player: number;
+  error: number;
 }
 
 
-function emitInputRequired(events: EventQueue, player: PlayerIndex): void {
+function emitInputRequired(events: EventQueue, player: PlayerIndex, error: number = 0): void {
   events.push({
     type: EventType.REQUIRE_INPUT,
     player,
+    error,
   });
 }
 
@@ -542,21 +550,37 @@ function trySpawnMoveCommand(
   moveTo: number
 ): boolean {
   const player: PlayerState = game.players[game.currentPlayer];
+  console.log("Current player:", player.id)
+  console.log("Action player:", playerId)
+  console.log("Game Phase:", game.phase)
+  console.log("Bench Index:", benchIndex)
+  console.log("Spawn Point:", spawnPoint)
+  console.log("Move To:", moveTo)
   // is it the player's turn?
   if (player.id != playerId) { return false }
+  console.log("Check 1")
   // can the player issue spawn commands?
   if (game.phase != GameplayPhase.INPUT_ANY) { return false }
+  console.log("Check 2")
   // is the tile index valid?
   const n = game.battlefield.tiles.length;
   if (spawnPoint < 0 || spawnPoint >= n) { return false }
+  console.log("Check 3")
   // is the tile index valid?
   if (moveTo < 0 || moveTo >= n) { return false }
+  console.log("Check 4")
   // does the player have this minion on the bench?
   const species: MinionData | null = removeFromBench(player, benchIndex);
   if (species == null) { return false }
+  console.log("Check 5")
   // try to spawn the minion
   const minion: Minion | null = trySpawnMinion(game, player, species, spawnPoint);
-  if (minion == null) { return false }
+  if (minion == null) {
+    // rollback
+    addToBench(player, species);
+    return false;
+  }
+  console.log("Check 6")
   // minions have 1 less movement when they spawn
   minion.movement--;
   // try to move the minion to the desired spot
@@ -566,6 +590,7 @@ function trySpawnMoveCommand(
     placeMinionOnBench(game, minion);
     return false;
   }
+  console.log("Check 7")
   // clean up
   minion.movement++;
   return true;
@@ -578,6 +603,8 @@ function trySpawnMinion(
   species: MinionData,
   at: number
 ): Minion | null {
+  console.log("Player Resources:", player.resources)
+  console.log("Minion Cost:", species.cost)
   // does the player have enough resources?
   if (player.resources < species.cost) { return null }
   // generate minion
@@ -585,6 +612,7 @@ function trySpawnMinion(
   const minion: Minion = newMinion(uid, player.index, species);
   // try to place it on the battlefield
   if (!placeMinionOnBattlefield(game, minion, at, true)) { return null }
+  console.log("Minion UID:", uid)
   // register the minion and the event
   player.resources -= species.cost;
   game.battlefield.minions[uid] = minion;
@@ -602,9 +630,13 @@ function placeMinionOnBattlefield(
   if (minion == null) { return false }
   // is the tile free?
   const tile: Tile = game.battlefield.tiles[at];
+  console.log("Tile occupied?", !!tile.minion)
   if (!!tile.minion) { return false }
   // is a spawn point required?
   if (spawn) {
+    console.log("Spawn Point?", tile.type === TileType.SPAWN)
+    console.log("Tile owner:", tile.owner)
+    console.log("Minion owner:", minion.owner)
     // is the tile a spawn point?
     if (tile.type != TileType.SPAWN) { return false }
     // is the spawn point owned by the same player?
@@ -647,8 +679,10 @@ function tryMoveCommand(game: GameState, playerId: string, from: number, to: num
 
 
 function tryAttackMove(game: GameState, minion: Minion, to: number): boolean {
-  // is there a path between the given tiles?
   const from: number = minion.position;
+  // is it already there?
+  if (from === to) { return true }
+  // is there a path between the given tiles?
   const path: number[] = getPath(game.battlefield, from, to, minion.movement);
   if (path.length === 0) { return false }
   // are there minions along the way (excluding the last tile)?
@@ -853,6 +887,7 @@ function removeFromBattleByTile(game: GameState, i: number): Minion | null {
 
 function removeFromBench(player: PlayerState, i: number): MinionData | null {
   const bench = player.bench;
+  console.log("Player Bench:", player.bench);
   if (i < 0 || i >= bench.length) { return null }
   const species: MinionData[] = bench.splice(i, 1);
   // emit_signal("minion_exited_bench", minion)
