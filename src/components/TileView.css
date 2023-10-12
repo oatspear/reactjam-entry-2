@@ -1,5 +1,11 @@
 .tile {
   width: 64px;
+  height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
 .tile.player-1 {

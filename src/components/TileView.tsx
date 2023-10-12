@@ -1,14 +1,16 @@
 import './TileView.css';
-import { PlayerIndex, Tile, TileType } from '../logic.ts';
+import { Minion, PlayerIndex, Tile, TileType } from '../logic.ts';
+import MinionPin from './MinionPin.tsx';
 
 
 // Define the type for component props
 interface TileProps {
   tile: Tile;
+  minion: Minion | undefined;
 }
 
 
-const TileView = ({tile}: TileProps): JSX.Element => {
+const TileView = ({ tile, minion }: TileProps): JSX.Element => {
   if (tile.type === TileType.UNPATHABLE) {
     return (
       <div className="tile"></div>
@@ -36,7 +38,7 @@ const TileView = ({tile}: TileProps): JSX.Element => {
 
   return (
     <div className={className} onClick={handleClick}>
-      
+      { minion != null && <MinionPin minion={minion} /> }
     </div>
   );
 };
