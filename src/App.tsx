@@ -6,8 +6,8 @@ import "./App.css"
 import { GameState } from "./logic.ts"
 
 import ModalPopup from './components/ModalPopup';
-import MeterBar from './components/MeterBar';
-import Battlefield from './components/Battlefield';
+// import MeterBar from './components/MeterBar';
+import BattlefieldView from './components/BattlefieldView.tsx';
 import ActionBar from './components/ActionBar';
 
 
@@ -63,10 +63,10 @@ function App() {
   }
 
   // <MeterBar steps={7} initialValue={3} />
-  // <Battlefield locations={game.locations} />
   return (
     <>
       <div>
+        <BattlefieldView battlefield={game.battlefield} />
         <button onClick={toggleActionBar}>Toggle Action Bar</button>
         <ActionBar isVisible={isActionBarVisible} actions={barActions} />
         <button onClick={openModal}>Open Modal</button>
