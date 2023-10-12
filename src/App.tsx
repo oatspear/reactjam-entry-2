@@ -35,12 +35,12 @@ function App() {
       const minions = game.locations[i].minions[team];
       for (let j = 0; j < minions.length; ++j) {
         if (!minions[j]) {
-          Rune.actions.spawnMinion({ location: i, team: team, index: j });
+          // Rune.actions.spawnMinion({ location: i, team: team, index: j });
           return;
         }
       }
     }
-    Rune.actions.clearMinions();
+    // Rune.actions.clearMinions();
   };
 
   const barActions = [
@@ -62,11 +62,11 @@ function App() {
     return <div>Loading...</div>
   }
 
+  // <MeterBar steps={7} initialValue={3} />
+  // <Battlefield locations={game.locations} />
   return (
     <>
       <div>
-        <MeterBar steps={7} initialValue={3} />
-        <Battlefield locations={game.locations} />
         <button onClick={toggleActionBar}>Toggle Action Bar</button>
         <ActionBar isVisible={isActionBarVisible} actions={barActions} />
         <button onClick={openModal}>Open Modal</button>
@@ -83,8 +83,8 @@ function App() {
         </a>
       </div>
       <div className="card">
-        <button onClick={() => Rune.actions.increment({ amount: 1 })}>
-          count is {game.count}
+        <button>
+          count is {game.turnsTaken}
         </button>
         <p>
           Edit <code>src/App.tsx</code> or <code>src/logic.ts</code> and save to
