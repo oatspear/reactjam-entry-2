@@ -36,9 +36,16 @@ const TileView = ({ tile, minion }: TileProps): JSX.Element => {
     alert(`Clicked Tile-${tile.index}`);
   }
 
+  if (minion == null) {
+    return (<div className={className} onClick={handleClick}></div>);
+  }
+
   return (
     <div className={className} onClick={handleClick}>
-      { minion != null && <MinionPin minion={minion} /> }
+      <MinionPin minion={minion} />
+      <div className="minion-stats">
+        <span>{minion.power}</span> | <span>{minion.health}</span>
+      </div>
     </div>
   );
 };
