@@ -1,16 +1,22 @@
 import './BattlefieldView.css';
-import { Battlefield, Minion, Tile } from '../logic.ts';
+import { Battlefield, PlayerIndex, Tile } from '../logic.ts';
 import TileView from './TileView.tsx';
+
+
+interface TileClickCallbacks {
+  onSelect: () => void;
+}
 
 
 // Define the type for component props
 interface BattlefieldProps {
   battlefield: Battlefield;
-  flip: boolean;
+  player: PlayerIndex;
 }
 
 
-const BattlefieldView = ({battlefield, flip}: BattlefieldProps): JSX.Element => {
+const BattlefieldView = ({battlefield, player}: BattlefieldProps): JSX.Element => {
+  const flip: boolean = player === PlayerIndex.PLAYER1;
   const className = flip ? "battlefield flip" : "battlefield";
   const tiles = flip ? battlefield.tiles.toReversed() : battlefield.tiles;
   const minions = battlefield.minions;

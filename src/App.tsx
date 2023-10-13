@@ -3,7 +3,7 @@ import reactLogo from "./assets/rune.svg"
 import viteLogo from "/vite.svg"
 
 import "./App.css"
-import { EventType, GameState } from "./logic.ts"
+import { EventType, GameState, PlayerIndex } from "./logic.ts"
 
 import ModalPopup from './components/ModalPopup';
 // import MeterBar from './components/MeterBar';
@@ -64,17 +64,20 @@ function App() {
   }
 
   const { height, width } = getWindowDimensions();
-  let flipBoard = false;
-  if (game != null && myPlayerId != null) {
-    flipBoard = game.players[0].id === myPlayerId;
+  let playerIndex: PlayerIndex = PlayerIndex.NONE;
+  if (myPlayerId != null) {
+    for (const p of game.players) {
+      if (p.id === myPlayerId) {
+        playerIndex = p.index;
+      }
+    }
   }
 
-  // <MeterBar steps={7} initialValue={3} />
   return (
     <>
       <div className="flex-column-centered">
         <code>width: {width} ~ height: {height}</code>
-        <BattlefieldView battlefield={game.battlefield} flip={flipBoard} />
+        <BattlefieldView battlefield={game.battlefield} player={playerIndex} />
         <button onClick={toggleActionBar}>Toggle Action Bar</button>
         <ActionBar isVisible={isActionBarVisible} actions={barActions} />
         <button onClick={openModal}>Open Modal</button>
