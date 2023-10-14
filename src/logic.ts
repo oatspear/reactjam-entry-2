@@ -477,6 +477,17 @@ export interface GameState {
 }
 
 
+export function getPlayerIndex(game: GameState, playerId: string | undefined): PlayerIndex {
+  if (playerId == null) { return PlayerIndex.NONE }
+  for (const player of game.players) {
+    if (player.id === playerId) {
+      return player.index;
+    }
+  }
+  return PlayerIndex.NONE;
+}
+
+
 // -----------------------------------------------------------------------------
 // Game Events
 // -----------------------------------------------------------------------------
@@ -660,19 +671,25 @@ function tryMoveCommand(game: GameState, playerId: string, from: number, to: num
   const player: PlayerState = game.players[game.currentPlayer];
   // is it the player's turn?
   if (player.id != playerId) { return false }
+  console.log("Move Check 1")
   // can the player issue spawn commands?
   if (game.phase != GameplayPhase.INPUT_ANY) { return false }
+  console.log("Move Check 2")
   // is the tile index valid?
   const n = game.battlefield.tiles.length;
   if (from < 0 || from >= n) { return false }
+  console.log("Move Check 3")
   // is the tile index valid?
   if (to < 0 || to >= n) { return false }
+  console.log("Move Check 4")
   // does the origin tile have a minion?
   const tile: Tile = game.battlefield.tiles[from];
   if (!tile.minion) { return false }
+  console.log("Move Check 5")
   // does the player control this minion?
   const minion: Minion = game.battlefield.minions[tile.minion];
   if (minion.owner != player.index) { return false }
+  console.log("Move Check 6")
   // try to attack-move to the destination tile
   return tryAttackMove(game, minion, to);
 }
@@ -1008,10 +1025,12 @@ Rune.initLogic({
       if (success) {
         // TODO check if there is combat available
         // transition to the next player, ask for new input
-        swapTurns(game);
+        // swapTurns(game);
+        console.log("FIXME - swapTurn() here")
       } else {
         // invalidate command, ask for new input
         game.events = [];
+        console.log("Failed to execute move command", from, to)
       }
       emitInputRequired(game.events, game.currentPlayer);
     },
@@ -1023,7 +1042,8 @@ Rune.initLogic({
       const success = trySpawnMoveCommand(game, playerId, benchIndex, spawnPoint, moveTo);
       if (success) {
         // transition to the next player, ask for new input
-        swapTurns(game);
+        // swapTurns(game);
+        console.log("FIXME - swapTurn() here")
       } else {
         // invalidate command, ask for new input
         game.events = [];

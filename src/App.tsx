@@ -3,12 +3,19 @@ import reactLogo from "./assets/rune.svg"
 import viteLogo from "/vite.svg"
 
 import "./App.css"
-import { EventType, GameState, PlayerIndex } from "./logic.ts"
+import { EventType, GameState, PlayerIndex, getPlayerIndex } from "./logic.ts"
 
 import ModalPopup from './components/ModalPopup';
 // import MeterBar from './components/MeterBar';
-import BattlefieldView from './components/BattlefieldView.tsx';
+import BattlefieldView, { BattlefieldCallbacks } from './components/BattlefieldView.tsx';
 import ActionBar from './components/ActionBar';
+
+
+enum UIState {
+  INITIAL = 0,
+  INPUT_MAIN,
+  INPUT_MOVE,
+}
 
 
 function getWindowDimensions() {
@@ -18,10 +25,13 @@ function getWindowDimensions() {
 
 
 function App() {
+  const [uiState, setUiState] = useState<UIState>(UIState.INITIAL);
   const [game, setGame] = useState<GameState>();
   const [myPlayerId, setMyPlayerId] = useState<string | undefined>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isActionBarVisible, setIsActionBarVisible] = useState(false);
+
+  const [selectedTile, setSelectedTile] = useState<number | undefined>();
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -64,20 +74,30 @@ function App() {
   }
 
   const { height, width } = getWindowDimensions();
-  let playerIndex: PlayerIndex = PlayerIndex.NONE;
-  if (myPlayerId != null) {
-    for (const p of game.players) {
-      if (p.id === myPlayerId) {
-        playerIndex = p.index;
+  const playerIndex: PlayerIndex = getPlayerIndex(game, myPlayerId);
+
+  const battlefieldCallbacks: BattlefieldCallbacks = {
+    onTileSelected(i: number) {
+      const tile = game.battlefield.tiles[i];
+      const minion = game.battlefield.minions[tile.minion]
+      if (minion != null) {
+        if (minion.owner === playerIndex) {
+          alert("Selected your own minion")
+          const from = i;
+          const to = i + 1;
+          Rune.actions.move({ from, to });
+        } else {
+          alert("Selected an enemy minion")
+        }
       }
     }
-  }
+  };
 
   return (
     <>
       <div className="flex-column-centered">
         <code>width: {width} ~ height: {height}</code>
-        <BattlefieldView battlefield={game.battlefield} player={playerIndex} />
+        <BattlefieldView battlefield={game.battlefield} player={playerIndex} callbacks={battlefieldCallbacks} />
         <button onClick={toggleActionBar}>Toggle Action Bar</button>
         <ActionBar isVisible={isActionBarVisible} actions={barActions} />
         <button onClick={openModal}>Open Modal</button>

@@ -7,10 +7,11 @@ import MinionPin from './MinionPin.tsx';
 interface TileProps {
   tile: Tile;
   minion: Minion | undefined;
+  handleClick: () => void;
 }
 
 
-const TileView = ({ tile, minion }: TileProps): JSX.Element => {
+const TileView = ({ tile, minion, handleClick }: TileProps): JSX.Element => {
   if (tile.type === TileType.UNPATHABLE) {
     return (
       <div className="tile"></div>
@@ -30,10 +31,6 @@ const TileView = ({ tile, minion }: TileProps): JSX.Element => {
     className += " player-1";
   } else if (tile.owner === PlayerIndex.PLAYER2) {
     className += " player-2";
-  }
-
-  function handleClick() {
-    alert(`Clicked Tile-${tile.index}`);
   }
 
   if (minion == null) {
