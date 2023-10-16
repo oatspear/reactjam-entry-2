@@ -1,6 +1,6 @@
 #root {
   max-width: 1280px;
-  /*margin: 0 auto;*/
+  margin: 0 auto;
   padding: 1rem 0;
   text-align: center;
   display: flex;
@@ -14,6 +14,7 @@
   align-items: center;
 }
 
+/*
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -28,11 +29,18 @@
 .logo.rune:hover {
   filter: drop-shadow(0 0 2em #a72cebaa);
 }
+*/
 
-.card {
-  padding: 2em;
+.enemy-action-bar {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
 
-.read-the-docs {
-  color: #888;
+.player-action-bar {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
