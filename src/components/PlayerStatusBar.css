@@ -2,9 +2,13 @@
   width: 100%;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .player-status-bar > .status-labels {
+  min-width: 328px;  /* 64*5 + 2*4 */
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -28,6 +32,8 @@
 */
 
 .player-status-bar > .nameplate {
+  display: inline-block;
+  flex: 0 0 auto;
   font-size: 1rem;
   font-weight: bold;
   line-height: 1.25;

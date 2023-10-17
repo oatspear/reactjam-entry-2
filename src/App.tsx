@@ -8,6 +8,7 @@ import BattlefieldView, { BattlefieldCallbacks } from './components/BattlefieldV
 import ActionBar from './components/ActionBar';
 import EnemyActionPanel from "./components/EnemyActionPanel.tsx";
 import PlayerStatusBar from "./components/PlayerStatusBar.tsx";
+import PlayerActionBar from "./components/PlayerActionBar.tsx";
 
 
 type PlayersObject = Record<string, { playerId: string, displayName: string, avatarUrl: string }>;
@@ -191,17 +192,11 @@ function App() {
 
   const tempEnemyDisplayName: string = `width: ${width} ~ height: ${height}`;
 
-  return (
+  const playerState: PlayerState = game.players[player.index];
+  const enemyState: PlayerState = game.players[enemy.index];
+
+  const _unused = (
     <>
-      <PlayerStatusBar player={game.players[enemy.index]} displayName={tempEnemyDisplayName} flip={true} />
-      <BattlefieldView battlefield={game.battlefield} player={playerIndex} callbacks={battlefieldCallbacks} />
-      <PlayerStatusBar player={game.players[player.index]} displayName={player.displayName} flip={false} />
-
-      <div className="hud">
-        { !!displayStats && <div className="minion-stats">Stats</div> }
-        <div className="resources"></div>
-      </div>
-
       <div className="main-action-panel-container">
         { showPlayerActionBar && newPlayerActionPanel(game, playerIndex, uiState) }
       </div>
@@ -212,7 +207,18 @@ function App() {
       <button onClick={openModal}>Open Modal</button>
       { isModalOpen && <ModalPopup message="Hello, I'm a modal!" onClose={closeModal} /> }
     </>
+  );
+
+  return (
+    <>
+      <PlayerStatusBar player={enemyState} displayName={tempEnemyDisplayName} flip={true} />
+      <BattlefieldView battlefield={game.battlefield} player={playerIndex} callbacks={battlefieldCallbacks} />
+      <PlayerStatusBar player={playerState} displayName={player.displayName} flip={false} />
+      <div className="main-action-container">
+        { showPlayerActionBar && <PlayerActionBar player={playerState} /> }
+      </div>
+    </>
   )
 }
 
-export default App
+export default App;

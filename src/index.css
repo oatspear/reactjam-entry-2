@@ -8,7 +8,8 @@
   font-weight: 400;
 
   color: #213547;
-  background-color: #ffffff;
+  /*background-color: white;*/
+  background-color: red;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -18,17 +19,11 @@
 }
 
 body {
+  padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  /*place-items: center;*/
   min-height: 100vh;
+  height: 100vh;
   overflow-x: hidden;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
 }
 
 button {
@@ -48,4 +43,8 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 0;
+}
+
+.hidden {
+  display: none;
 }
