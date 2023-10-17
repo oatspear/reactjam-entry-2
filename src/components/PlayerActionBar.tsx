@@ -8,16 +8,21 @@ import { useState } from 'react';
 // Define the type for component props
 interface PlayerActionBarProps {
   player: PlayerState;
+  enemy: PlayerState;
+  playerAvatarUrl: string;
+  enemyAvatarUrl: string;
 }
 
 
-const PlayerActionBar = ({ player }: PlayerActionBarProps): JSX.Element => {
+const PlayerActionBar = ({ player, enemy, playerAvatarUrl, enemyAvatarUrl }: PlayerActionBarProps): JSX.Element => {
   const [showMinionDeck, setShowMinionDeck] = useState<boolean>(true);
   const [isThisPlayer, setIsThisPlayer] = useState<boolean>(true);
 
   const swichActionPlayer = () => { setIsThisPlayer(!isThisPlayer) };
   const setDeckViewToMinions = () => { setShowMinionDeck(true) };
   const setDeckViewToTech = () => { setShowMinionDeck(false) };
+
+  const avatarUrl: string = isThisPlayer ? playerAvatarUrl : enemyAvatarUrl;
 
   return (
     <div className="player-action-bar">
@@ -35,7 +40,7 @@ const PlayerActionBar = ({ player }: PlayerActionBarProps): JSX.Element => {
         <div className="player-switch" onClick={swichActionPlayer}>
           { isThisPlayer && <img className="flag" src={iconPlayerFlag} /> }
           <div className="player-avatar">
-            
+            <img src={avatarUrl} />
           </div>
           { !isThisPlayer && <img className="flag" src={iconEnemyFlag} /> }
         </div>

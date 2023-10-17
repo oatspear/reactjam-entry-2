@@ -10,6 +10,7 @@ import EnemyActionPanel from "./components/EnemyActionPanel.tsx";
 import PlayerStatusBar from "./components/PlayerStatusBar.tsx";
 import PlayerActionBar from "./components/PlayerActionBar.tsx";
 
+import iconAvatarPlaceholder from "./assets/avatar-placeholder.png";
 
 type PlayersObject = Record<string, { playerId: string, displayName: string, avatarUrl: string }>;
 
@@ -148,7 +149,7 @@ function App() {
           AI: {
             playerId: "AI",
             displayName: "AI (Bot)",
-            avatarUrl: "",
+            avatarUrl: iconAvatarPlaceholder,
           },
         });
       },
@@ -163,6 +164,9 @@ function App() {
 
   const playerIndex: PlayerIndex = getPlayerIndex(game, myPlayerId);
   const [enemy, player] = getTopBottomPlayers(game, playerIndex, players);
+
+  const playerState: PlayerState = game.players[player.index];
+  const enemyState: PlayerState = game.players[enemy.index];
 
   const battlefieldCallbacks: BattlefieldCallbacks = {
     onTileSelected(i: number) {
@@ -192,9 +196,6 @@ function App() {
 
   const tempEnemyDisplayName: string = `width: ${width} ~ height: ${height}`;
 
-  const playerState: PlayerState = game.players[player.index];
-  const enemyState: PlayerState = game.players[enemy.index];
-
   const _unused = (
     <>
       <div className="main-action-panel-container">
@@ -215,7 +216,15 @@ function App() {
       <BattlefieldView battlefield={game.battlefield} player={playerIndex} callbacks={battlefieldCallbacks} />
       <PlayerStatusBar player={playerState} displayName={player.displayName} flip={false} />
       <div className="main-action-container">
-        { showPlayerActionBar && <PlayerActionBar player={playerState} /> }
+        {
+          showPlayerActionBar &&
+          <PlayerActionBar
+            player={playerState}
+            enemy={enemyState}
+            playerAvatarUrl={player.avatarUrl}
+            enemyAvatarUrl={enemy.avatarUrl}
+          />
+        }
       </div>
     </>
   )

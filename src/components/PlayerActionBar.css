@@ -82,16 +82,16 @@
 }
 
 .player-switch > .flag:first-child {
-  left: -24px;
+  left: -16px;
 }
 
 .player-switch > .flag:last-child {
-  right: -24px;
+  right: -16px;
 }
 
 .player-switch > .player-avatar {
-  width: 66px;
-  height: 66px;
+  width: 68px;
+  height: 68px;
   background-image: url("../assets/avatar-placeholder.png");
   background-origin: content-box;
   background-position: center;
@@ -103,6 +103,11 @@
 
 .player-switch > .player-avatar:hover {
   border: 2px solid lightgray;
+}
+
+.player-switch > .player-avatar > img {
+  width: 64px;
+  height: 64px;
 }
 
 /******************************************************************************/
@@ -123,4 +128,11 @@
   height: 64px;
   background-color: chocolate;
   border: 1px solid brown;
+  cursor: pointer;
+  user-select: none;
+}
+
+.roster > .item:hover {
+  background-color: goldenrod;
+  border: 1px solid salmon;
 }
