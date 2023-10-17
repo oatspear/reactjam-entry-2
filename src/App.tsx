@@ -3,10 +3,7 @@ import { useEffect, useState } from "react"
 import "./App.css"
 import { EventType, GameState, PlayerIndex, PlayerState, getPlayerIndex } from "./logic.ts"
 
-import ModalPopup from './components/ModalPopup';
 import BattlefieldView, { BattlefieldCallbacks } from './components/BattlefieldView.tsx';
-import ActionBar from './components/ActionBar';
-import EnemyActionPanel from "./components/EnemyActionPanel.tsx";
 import PlayerStatusBar from "./components/PlayerStatusBar.tsx";
 import PlayerActionBar from "./components/PlayerActionBar.tsx";
 
@@ -66,38 +63,6 @@ function getTopBottomPlayers(
 }
 
 
-function newEnemyActionPanel(game: GameState, enemyIndex: PlayerIndex, uiState: UIState): JSX.Element {
-  const player: PlayerState = game.players[enemyIndex];
-  const isActive: boolean = uiState === UIState.INPUT_ENEMY_BENCH
-    || uiState === UIState.INPUT_ENEMY_TECH
-    || uiState === UIState.INPUT_ENEMY_GRAVEYARD;
-  const handleShowBench = () => alert("show bench");
-  const handleShowTech = () => alert("show tech");
-  const handleShowGraveyard = () => alert("show graveyard");
-  return (
-    <EnemyActionPanel
-      player={player}
-      isActive={isActive}
-      handleShowBench={handleShowBench}
-      handleShowTech={handleShowTech}
-      handleShowGraveyard={handleShowGraveyard}
-    />
-  );
-}
-
-
-function newPlayerActionPanel(game: GameState, playerIndex: PlayerIndex, uiState: UIState): JSX.Element {
-  const player: PlayerState = game.players[playerIndex];
-  return (
-    <div className="player-action-panel">
-      <div className="bench">B</div>
-      <div className="tech">T</div>
-      <div className="graveyard">G</div>
-    </div>
-  );
-}
-
-
 function App() {
   // game state
   const [game, setGame] = useState<GameState | undefined>();
@@ -105,24 +70,11 @@ function App() {
   const [players, setPlayers] = useState<PlayersObject>({});
   // layer visibility
   const [uiState, setUiState] = useState<UIState>(UIState.INITIAL);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [isActionBarVisible, setIsActionBarVisible] = useState<boolean>(false);
   // UI state variables
   const [selectedTile, setSelectedTile] = useState<number>(-1);
   const [actionableTiles, setActionableTiles] = useState<number[]>([]);
   const [displayStats, setDisplayStats] = useState<DisplayMinionStats | undefined>();
 
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const toggleActionBar = () => {
-    setIsActionBarVisible(!isActionBarVisible);
-  };
 
   const spawnMinion = () => {
     if (game == null) { return; }
@@ -131,13 +83,6 @@ function App() {
     const moveTo: number = 0;
     Rune.actions.spawn({ benchIndex, spawnPoint, moveTo });
   };
-
-  const barActions = [
-    spawnMinion,
-    spawnMinion,
-    spawnMinion,
-    spawnMinion,
-  ];
 
   useEffect(() => {
     Rune.initClient({
@@ -192,23 +137,7 @@ function App() {
   };
 
   const showPlayerActionBar: boolean = uiState != UIState.ANIMATING;
-  const showEnemyActionBar: boolean = uiState != UIState.ANIMATING;
-
   const tempEnemyDisplayName: string = `width: ${width} ~ height: ${height}`;
-
-  const _unused = (
-    <>
-      <div className="main-action-panel-container">
-        { showPlayerActionBar && newPlayerActionPanel(game, playerIndex, uiState) }
-      </div>
-
-      <button onClick={toggleActionBar}>Toggle Action Bar</button>
-      <ActionBar isVisible={isActionBarVisible} actions={barActions} />
-
-      <button onClick={openModal}>Open Modal</button>
-      { isModalOpen && <ModalPopup message="Hello, I'm a modal!" onClose={closeModal} /> }
-    </>
-  );
 
   return (
     <>

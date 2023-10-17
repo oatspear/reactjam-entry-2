@@ -1,9 +1,10 @@
-import { PlayerState } from '../logic';
+import { MinionData, PlayerState } from '../logic';
 import './PlayerActionBar.css';
 
 import iconPlayerFlag from "../assets/flag-player.png";
 import iconEnemyFlag from "../assets/flag-enemy.png";
 import { useState } from 'react';
+import RecruitActionBar from './RecruitActionBar';
 
 // Define the type for component props
 interface PlayerActionBarProps {
@@ -11,6 +12,24 @@ interface PlayerActionBarProps {
   enemy: PlayerState;
   playerAvatarUrl: string;
   enemyAvatarUrl: string;
+}
+
+
+function renderMinions(player: PlayerState, handleSelectMinion: () => void): JSX.Element {
+  return (<RecruitActionBar bench={player.bench} graveyard={player.graveyard} canDeploy={true} />);
+}
+
+
+function renderTech(player: PlayerState, handleSelectTech: () => void): JSX.Element {
+  return (
+    <div className="roster">
+      {
+        player.deck.spells.map((spell: number, i: number) => (
+          <div className="item" key={i} onClick={handleSelectTech}>{i+1}</div>
+        ))
+      }
+    </div>
+  );
 }
 
 
@@ -22,7 +41,12 @@ const PlayerActionBar = ({ player, enemy, playerAvatarUrl, enemyAvatarUrl }: Pla
   const setDeckViewToMinions = () => { setShowMinionDeck(true) };
   const setDeckViewToTech = () => { setShowMinionDeck(false) };
 
+  const activePlayer: PlayerState = isThisPlayer ? player : enemy;
   const avatarUrl: string = isThisPlayer ? playerAvatarUrl : enemyAvatarUrl;
+
+  function handleSelectMinion() { }
+
+  function handleSelectTech() { }
 
   return (
     <div className="player-action-bar">
@@ -56,14 +80,11 @@ const PlayerActionBar = ({ player, enemy, playerAvatarUrl, enemyAvatarUrl }: Pla
         <label className="button-label" htmlFor="button-tech-deck">&#128736;</label>
       </div>
 
-      <div className="roster">
-        <div className="item">1</div>
-        <div className="item">2</div>
-        <div className="item">3</div>
-        <div className="item">4</div>
-        <div className="item">5</div>
-        <div className="item">6</div>
-      </div>
+      {
+        showMinionDeck
+        ? renderMinions(activePlayer, handleSelectMinion)
+        : renderTech(activePlayer, handleSelectTech)
+      }
     </div>
   );
 };
