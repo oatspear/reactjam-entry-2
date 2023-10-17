@@ -7,6 +7,7 @@ import ModalPopup from './components/ModalPopup';
 import BattlefieldView, { BattlefieldCallbacks } from './components/BattlefieldView.tsx';
 import ActionBar from './components/ActionBar';
 import EnemyActionPanel from "./components/EnemyActionPanel.tsx";
+import PlayerStatusBar from "./components/PlayerStatusBar.tsx";
 
 
 type PlayersObject = Record<string, { playerId: string, displayName: string, avatarUrl: string }>;
@@ -188,16 +189,13 @@ function App() {
   const showPlayerActionBar: boolean = uiState != UIState.ANIMATING;
   const showEnemyActionBar: boolean = uiState != UIState.ANIMATING;
 
+  const tempEnemyDisplayName: string = `width: ${width} ~ height: ${height}`;
+
   return (
     <>
-      <div className="enemy-action-panel-container">
-        { showEnemyActionBar && newEnemyActionPanel(game, enemy.index, uiState) }
-      </div>
-
-      <code>width: {width} ~ height: {height}</code>
-      <p><b>{enemy.displayName}</b></p>
+      <PlayerStatusBar player={game.players[enemy.index]} displayName={tempEnemyDisplayName} flip={true} />
       <BattlefieldView battlefield={game.battlefield} player={playerIndex} callbacks={battlefieldCallbacks} />
-      <p><b>{player.displayName}</b></p>
+      <PlayerStatusBar player={game.players[player.index]} displayName={player.displayName} flip={false} />
 
       <div className="hud">
         { !!displayStats && <div className="minion-stats">Stats</div> }

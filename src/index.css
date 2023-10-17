@@ -17,19 +17,11 @@
   -webkit-text-size-adjust: 100%;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #747bff;
-}
-
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+  flex-direction: column;
+  /*place-items: center;*/
   min-height: 100vh;
   overflow-x: hidden;
 }
