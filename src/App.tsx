@@ -6,6 +6,7 @@ import { EventType, GameState, PlayerIndex, PlayerState, getPlayerIndex } from "
 import ModalPopup from './components/ModalPopup';
 import BattlefieldView, { BattlefieldCallbacks } from './components/BattlefieldView.tsx';
 import ActionBar from './components/ActionBar';
+import EnemyActionPanel from "./components/EnemyActionPanel.tsx";
 
 
 type PlayersObject = Record<string, { playerId: string, displayName: string, avatarUrl: string }>;
@@ -62,22 +63,30 @@ function getTopBottomPlayers(
 }
 
 
-function newEnemyActionBar(game: GameState, enemyIndex: PlayerIndex): JSX.Element {
+function newEnemyActionPanel(game: GameState, enemyIndex: PlayerIndex, uiState: UIState): JSX.Element {
   const player: PlayerState = game.players[enemyIndex];
+  const isActive: boolean = uiState === UIState.INPUT_ENEMY_BENCH
+    || uiState === UIState.INPUT_ENEMY_TECH
+    || uiState === UIState.INPUT_ENEMY_GRAVEYARD;
+  const handleShowBench = () => alert("show bench");
+  const handleShowTech = () => alert("show tech");
+  const handleShowGraveyard = () => alert("show graveyard");
   return (
-    <div className="enemy-action-bar">
-      <div className="bench">B</div>
-      <div className="tech">T</div>
-      <div className="graveyard">G</div>
-    </div>
+    <EnemyActionPanel
+      player={player}
+      isActive={isActive}
+      handleShowBench={handleShowBench}
+      handleShowTech={handleShowTech}
+      handleShowGraveyard={handleShowGraveyard}
+    />
   );
 }
 
 
-function newPlayerActionBar(game: GameState, playerIndex: PlayerIndex, uiState: UIState): JSX.Element {
+function newPlayerActionPanel(game: GameState, playerIndex: PlayerIndex, uiState: UIState): JSX.Element {
   const player: PlayerState = game.players[playerIndex];
   return (
-    <div className="player-action-bar">
+    <div className="player-action-panel">
       <div className="bench">B</div>
       <div className="tech">T</div>
       <div className="graveyard">G</div>
@@ -181,31 +190,29 @@ function App() {
 
   return (
     <>
-      <div className="enemy-action-bar">
-        { showEnemyActionBar && newEnemyActionBar(game, enemy.index) }
+      <div className="enemy-action-panel-container">
+        { showEnemyActionBar && newEnemyActionPanel(game, enemy.index, uiState) }
       </div>
 
-      <div className="flex-column-centered">
-        <code>width: {width} ~ height: {height}</code>
-        <p><b>{enemy.displayName}</b></p>
-        <BattlefieldView battlefield={game.battlefield} player={playerIndex} callbacks={battlefieldCallbacks} />
-        <p><b>{player.displayName}</b></p>
+      <code>width: {width} ~ height: {height}</code>
+      <p><b>{enemy.displayName}</b></p>
+      <BattlefieldView battlefield={game.battlefield} player={playerIndex} callbacks={battlefieldCallbacks} />
+      <p><b>{player.displayName}</b></p>
 
-        <div className="hud">
-          { !!displayStats && <div className="minion-stats">Stats</div> }
-          <div className="resources"></div>
-        </div>
-
-        <div className="main-action-panel">
-          { showPlayerActionBar && newPlayerActionBar(game, playerIndex, uiState) }
-        </div>
-
-        <button onClick={toggleActionBar}>Toggle Action Bar</button>
-        <ActionBar isVisible={isActionBarVisible} actions={barActions} />
-
-        <button onClick={openModal}>Open Modal</button>
-        { isModalOpen && <ModalPopup message="Hello, I'm a modal!" onClose={closeModal} /> }
+      <div className="hud">
+        { !!displayStats && <div className="minion-stats">Stats</div> }
+        <div className="resources"></div>
       </div>
+
+      <div className="main-action-panel-container">
+        { showPlayerActionBar && newPlayerActionPanel(game, playerIndex, uiState) }
+      </div>
+
+      <button onClick={toggleActionBar}>Toggle Action Bar</button>
+      <ActionBar isVisible={isActionBarVisible} actions={barActions} />
+
+      <button onClick={openModal}>Open Modal</button>
+      { isModalOpen && <ModalPopup message="Hello, I'm a modal!" onClose={closeModal} /> }
     </>
   )
 }
