@@ -15,17 +15,24 @@ interface PlayerActionBarProps {
 }
 
 
-function renderMinions(player: PlayerState, handleSelectMinion: () => void): JSX.Element {
-  return (<RecruitActionBar bench={player.bench} graveyard={player.graveyard} canDeploy={true} />);
+function renderMinions(player: PlayerState, handleSelectMinion: (i: number) => void): JSX.Element {
+  return (
+    <RecruitActionBar
+      bench={player.bench}
+      graveyard={player.graveyard}
+      playerResources={player.resources}
+      onBenchMinionSelected={handleSelectMinion}
+    />
+  );
 }
 
 
-function renderTech(player: PlayerState, handleSelectTech: () => void): JSX.Element {
+function renderTech(player: PlayerState, handleSelectTech: (i: number) => void): JSX.Element {
   return (
     <div className="roster">
       {
         player.deck.spells.map((spell: number, i: number) => (
-          <div className="item" key={i} onClick={handleSelectTech}>{i+1}</div>
+          <div className="item" key={i} onClick={() => handleSelectTech(i)}>{i+1}</div>
         ))
       }
     </div>
@@ -44,9 +51,13 @@ const PlayerActionBar = ({ player, enemy, playerAvatarUrl, enemyAvatarUrl }: Pla
   const activePlayer: PlayerState = isThisPlayer ? player : enemy;
   const avatarUrl: string = isThisPlayer ? playerAvatarUrl : enemyAvatarUrl;
 
-  function handleSelectMinion() { }
+  function handleSelectMinion(i: number): void {
+    alert(`Deploy Minion ${i}`)
+  }
 
-  function handleSelectTech() { }
+  function handleSelectTech(i: number): void {
+    alert(`Use Tech ${i}`)
+  }
 
   return (
     <div className="player-action-bar">

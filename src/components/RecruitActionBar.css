@@ -1,28 +1,57 @@
-.action-bar {
-  position: fixed;
-  bottom: -100%; /* Start position outside the screen */
-  left: 8px;
-  right: 8px;
-  /* width: 80%; */
-  padding: 16px 8px 32px 8px;
-  border: 8px solid slategray;
-  border-radius: 4px;
-  background-color: lightgray;
-  transition: bottom 0.3s ease-in-out;
-  z-index: 100;
+/******************************************************************************/
+/* Common */
+/******************************************************************************/
+
+span.stat-badge {
+  font-weight: bold;
 }
 
-.action-bar.visible {
-  bottom: 16px; /* Final position at the bottom with 16px gap */
+span.stat-badge.negative {
+  color: firebrick;
 }
 
-.button-row {
+/******************************************************************************/
+/* Minion Roster */
+/******************************************************************************/
+
+
+/******************************************************************************/
+/* Minion Details */
+/******************************************************************************/
+
+.action-bar-check {
+  width: 100%;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.action-button {
-  height: 32px;
-  flex-basis: 22.5%;
-  background-color: ivory;
+.action-bar-check > .details {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.action-bar-check > .details > .portrait {
+  width: 64px;
+  height: 64px;
+  background-color: azure;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-bar-check > .details > .stats {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.action-bar-check > .details > .stats > .base-stats {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }

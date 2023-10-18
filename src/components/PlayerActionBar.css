@@ -137,3 +137,22 @@
   background-color: goldenrod;
   border: 1px solid salmon;
 }
+
+
+/******************************************************************************/
+/* Action Bars - Common */
+/******************************************************************************/
+
+
+.button-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.action-button {
+  height: 32px;
+  font-size: 1.5rem;
+  flex-basis: 22.5%;
+  background-color: ivory;
+}
